@@ -2,6 +2,7 @@ import tkinter as tk
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from stockfish import Stockfish
+from AutoClick import *
 import chess
 import time
 
@@ -10,12 +11,13 @@ class GUI():
         self.m = tk.Tk()
         self.m.title("Chess AI")        
         self.button = tk.Button(self.m,text="Start",command=self.Start)
-        self.button.pack()
+        self.button.pack(padx=20,pady=10)
         self.button1 = tk.Button(self.m,text="Run White",command=self.run_bot_white)
-        self.button1.pack()     
-        self.button1 = tk.Button(self.m,text="Run Black",command=self.run_bot_black)
-        self.button1.pack()
-        self.m.geometry("200x200")
+        self.button1.pack(padx=20,pady=10)     
+        self.button2 = tk.Button(self.m,text="Run Black",command=self.run_bot_black)
+        self.button2.pack(padx=20,pady=10)
+        self.m.geometry("300x150")
+        self.AutoMouse = AutoDragger()
 
     def Start(self):
         self.browser = webdriver.Chrome()
@@ -25,7 +27,9 @@ class GUI():
         self.engine = Stockfish(path=r"D:/Study/ProgramFiles/stockfish/stockfish-windows-x86-64-avx2")
         board = chess.Board()
         moves = []
-        print("the best move is " + self.engine.get_best_move())
+        best_move = self.engine.get_best_move()
+        print("the best move is " + best_move)
+        self.AutoMouse.Drag((self.AutoMouse.convertStrToPositionWhite(best_move[:2])),self.AutoMouse.convertStrToPositionWhite(best_move[2:5]))
         while(True):
 
             elements = self.browser.find_elements(By.CSS_SELECTOR, '[class*="node-highlight-content"][class*="offset-for-annotation-icon"]')
@@ -38,9 +42,17 @@ class GUI():
                 if(board.is_checkmate()):
                     print("Congrats!! CHECKMATE!!")
                     break
+                try:
+                    if(elements[-1].find_element(By.CSS_SELECTOR,"game-over-message-component").text.lower() == "game over"):
+                        print("The Game Ended.")
+                        break
+                except:
+                    pass
                 self.engine.make_moves_from_current_position([board.peek()])
                 if(len(moves)%2 == 0 and len(moves) != 1):
-                    print("the best move is " + self.engine.get_best_move())
+                    best_move = self.engine.get_best_move()
+                    print("the best move is " + best_move)
+                    self.AutoMouse.Drag((self.AutoMouse.convertStrToPositionWhite(best_move[:2])),self.AutoMouse.convertStrToPositionWhite(best_move[2:]))
             time.sleep(1)
 
     def run_bot_black(self):
@@ -56,9 +68,17 @@ class GUI():
                     moves.append(elements[-1].text)
                 board.push_xboard(moves[-1])
                 if(board.is_checkmate()):
-                    print("congrates!! CHECKMATE!!")
+                    print("Congrates!! CHECKMATE!!")
                     break
+                try:
+                    if(elements[-1].find_element(By.CSS_SELECTOR,"game-over-message-component").text.lower() == "game over"):
+                        print("The Game Ended.")
+                        break
+                except:
+                    pass
                 self.engine.make_moves_from_current_position([board.peek()])
                 if(len(moves)%2 == 1):
-                    print("the best move is " + self.engine.get_best_move())
+                    best_move = self.engine.get_best_move()
+                    print("the best move is " + best_move)
+                    self.AutoMouse.Drag((self.AutoMouse.convertStrToPositionBlack(best_move[:2])),self.AutoMouse.convertStrToPositionBlack(best_move[2:]))
             time.sleep(1)
