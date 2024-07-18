@@ -7,7 +7,7 @@ import chess
 import time
 
 class GUI():
-    def __init__(self):
+    def __init__(self,path):
         self.m = tk.Tk()
         self.m.title("Chess AI")        
         self.button = tk.Button(self.m,text="Start",command=self.Start)
@@ -18,20 +18,22 @@ class GUI():
         self.button2.pack(padx=20,pady=10)
         self.m.geometry("300x150")
         self.AutoMouse = AutoDragger()
+        self.path = path
 
     def Start(self):
         self.browser = webdriver.Chrome()
         self.browser.get(r"https://www.chess.com/play")
         
     def run_bot_white(self):
-        self.engine = Stockfish(path=r"D:/Study/ProgramFiles/stockfish/stockfish-windows-x86-64-avx2")
+        self.engine = Stockfish(path=self.path)
         board = chess.Board()
         moves = []
         best_move = self.engine.get_best_move()
         print("the best move is " + best_move)
         self.AutoMouse.Drag((self.AutoMouse.convertStrToPositionWhite(best_move[:2])),self.AutoMouse.convertStrToPositionWhite(best_move[2:5]))
         while(True):
-
+            game_over = self.browser.find_elements(By.CSS_SELECTOR, '[class*="game-over-arena-details-component"]')
+            print(game_over[0].get_attribute("style") == '')
             elements = self.browser.find_elements(By.CSS_SELECTOR, '[class*="node-highlight-content"][class*="offset-for-annotation-icon"]')
             if(len(elements) != len(moves)):
                 try:
@@ -53,10 +55,9 @@ class GUI():
                     best_move = self.engine.get_best_move()
                     print("the best move is " + best_move)
                     self.AutoMouse.Drag((self.AutoMouse.convertStrToPositionWhite(best_move[:2])),self.AutoMouse.convertStrToPositionWhite(best_move[2:]))
-            time.sleep(1)
 
     def run_bot_black(self):
-        self.engine = Stockfish(path=r"D:/Study/ProgramFiles/stockfish/stockfish-windows-x86-64-avx2")
+        self.engine = Stockfish(path=self.path)
         board = chess.Board()
         moves = []
         while(True):
@@ -81,4 +82,3 @@ class GUI():
                     best_move = self.engine.get_best_move()
                     print("the best move is " + best_move)
                     self.AutoMouse.Drag((self.AutoMouse.convertStrToPositionBlack(best_move[:2])),self.AutoMouse.convertStrToPositionBlack(best_move[2:]))
-            time.sleep(1)
